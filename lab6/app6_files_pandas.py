@@ -25,24 +25,48 @@ if file:
         ]
         st.dataframe(filtered)
 
-    # Exercise 1: Display the number of rows and columns
-    st.subheader("Dataset Information")
-    st.write("Number of rows:", df.shape[0])
-    st.write("Number of columns:", df.shape[1])
+    st.subheader("Sort")
+    sort_col = st.selectbox("Sort by", df.columns, key="sort")
+    st.dataframe(df.sort_values(sort_col))
 
-    # Exercise 2: Sort the data
-    st.subheader("Sort Data")
-    sort_col = st.selectbox("Choose column to sort", df.columns)
-    ascending = st.checkbox("Sort ascending", value=True)
-    st.dataframe(df.sort_values(by=sort_col, ascending=ascending))
+    st.subheader("Download CSV")
+    csv = df.to_csv(index=False).encode("utf-8")
 
-    # Exercise 3: Select columns to display
-    st.subheader("Select Columns")
-    selected_cols = st.multiselect(
-        "Choose columns to display",
-        df.columns.tolist(),
-        default=df.columns.tolist()
+    st.download_button(
+        label="Download CSV",
+        data=csv,
+        file_name="processed.csv",
+        mime="text/csv"
     )
 
-    if selected_cols:
-        st.dataframe(df[selected_cols])
+    st.subheader("Missing Values")
+    st.write(df.isnull().sum())
+
+    option = st.radio(
+        "Handle missing:",
+        ["Keep", "Drop", "Fill with 0"]
+    )
+
+    if option == "Drop":
+        df = df.dropna()
+    elif option == "Fill with 0":
+        df = df.fillna(0)
+
+    st.dataframe(df)
+
+    st.subheader("Group By and Aggregate")
+
+    group_col = st.selectbox(
+        "Group by",
+        df.columns,
+        key="group"
+    )
+
+    num_cols = df.select_dtypes(include="number").columns
+
+    if len(num_cols) > 0:
+        agg = df.groupby(group_col)[num_cols].mean()
+        st.dataframe(agg)
+    else:
+        st.write("No numeric columns available.")
+        

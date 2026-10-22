@@ -21,9 +21,27 @@ def create_table():
         CREATE TABLE IF NOT EXISTS users (
             id SERIAL PRIMARY KEY,
             username VARCHAR(100) UNIQUE NOT NULL,
+            email VARCHAR(255) UNIQUE,
             password_hash VARCHAR(255) NOT NULL,
-            role VARCHAR(20) DEFAULT 'user'
+            role VARCHAR(20) DEFAULT 'user',
+            failed_attempts INTEGER DEFAULT 0,
+            is_locked BOOLEAN DEFAULT FALSE
         )
+    """)
+
+    cur.execute("""
+        ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS email VARCHAR(255) UNIQUE
+    """)
+
+    cur.execute("""
+        ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS failed_attempts INTEGER DEFAULT 0
+    """)
+
+    cur.execute("""
+        ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS is_locked BOOLEAN DEFAULT FALSE
     """)
 
     conn.commit()
